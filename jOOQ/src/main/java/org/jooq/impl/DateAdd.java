@@ -139,7 +139,9 @@ implements
             case HSQLDB: {
                 switch (datePart) {
                     case YEAR:   keyword = DSL.keyword("sql_tsi_year");   break;
+                    case QUARTER:  keyword = DSL.keyword("sql_tsi_quarter");  break;
                     case MONTH:  keyword = DSL.keyword("sql_tsi_month");  break;
+                    case WEEK:  keyword = DSL.keyword("sql_tsi_week");  break;
                     case DAY:    keyword = DSL.keyword("sql_tsi_day");    break;
                     case HOUR:   keyword = DSL.keyword("sql_tsi_hour");   break;
                     case MINUTE: keyword = DSL.keyword("sql_tsi_minute"); break;
@@ -154,7 +156,9 @@ implements
             case H2: {
                 switch (datePart) {
                     case YEAR:   string = "year";   break;
+                    case QUARTER:  string = "quarter";  break;
                     case MONTH:  string = "month";  break;
+                    case WEEK:  string = "week";  break;
                     case DAY:    string = "day";    break;
                     case HOUR:   string = "hour";   break;
                     case MINUTE: string = "minute"; break;
@@ -199,7 +203,9 @@ implements
             case YUGABYTE: {
                 switch (datePart) {
                     case YEAR:   string = "1 year";   break;
+                    case QUARTER:  string = "3 month";  break;
                     case MONTH:  string = "1 month";  break;
+                    case WEEK:  string = "1 week";  break;
                     case DAY:    string = "1 day";    break;
                     case HOUR:   string = "1 hour";   break;
                     case MINUTE: string = "1 minute"; break;
@@ -230,7 +236,9 @@ implements
             case SQLITE: {
                 switch (datePart) {
                     case YEAR:   string = " year";   break;
+                    case QUARTER:  string = " quarter";  break;
                     case MONTH:  string = " month";  break;
+                    case WEEK:  string = " week";  break;
                     case DAY:    string = " day";    break;
                     case HOUR:   string = " hour";   break;
                     case MINUTE: string = " minute"; break;
@@ -385,7 +393,9 @@ implements
     private final Keyword standardKeyword() {
         switch (datePart) {
             case YEAR:
+            case QUARTER:
             case MONTH:
+            case WEEK:
             case DAY:
             case HOUR:
             case MINUTE:

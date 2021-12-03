@@ -80,7 +80,9 @@ final class TruncDate<T> extends AbstractField<T> implements UNotYetImplemented 
             case HSQLDB: {
                 switch (part) {
                     case YEAR:   keyword = "YY"; break;
+                    case QUARTER:   keyword = "Q"; break;
                     case MONTH:  keyword = "MM"; break;
+                    case WEEK:  keyword = "W"; break;
                     case DAY:    keyword = "DD"; break;
                     case HOUR:   keyword = "HH"; break;
                     case MINUTE: keyword = "MI"; break;
@@ -95,7 +97,9 @@ final class TruncDate<T> extends AbstractField<T> implements UNotYetImplemented 
             case H2: {
                 switch (part) {
                     case YEAR:   format = "yyyy";                break;
+                    case QUARTER:  format = "yyyy-Q";             break;
                     case MONTH:  format = "yyyy-MM";             break;
+                    case WEEK:  format = "yyyy-W";             break;
                     case DAY:    format = "yyyy-MM-dd";          break;
                     case HOUR:   format = "yyyy-MM-dd HH";       break;
                     case MINUTE: format = "yyyy-MM-dd HH:mm";    break;
@@ -131,7 +135,9 @@ final class TruncDate<T> extends AbstractField<T> implements UNotYetImplemented 
             case YUGABYTE: {
                 switch (part) {
                     case YEAR:   keyword = "year";   break;
+                    case QUARTER:  keyword = "quarter";  break;
                     case MONTH:  keyword = "month";  break;
+                    case WEEK:  keyword = "week";  break;
                     case DAY:    keyword = "day";    break;
                     case HOUR:   keyword = "hour";   break;
                     case MINUTE: keyword = "minute"; break;
