@@ -372,6 +372,7 @@ final class MetaImpl extends AbstractMeta {
                     // [#2323] SQLite JDBC drivers have a bug. They return other
                     // object types, too: https://bitbucket.org/xerial/sqlite-jdbc/issue/68
                     case SQLITE:
+                    case ORACLE:
                         types = new String[] { "TABLE", "VIEW" };
                         break;
 

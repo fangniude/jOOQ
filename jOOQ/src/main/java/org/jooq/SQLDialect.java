@@ -114,8 +114,8 @@ public enum SQLDialect {
      */
     FIREBIRD("Firebird", false, true),
 
-
-
+    FIREBIRD_2_5("Firebird", false, true, FIREBIRD, null),
+    FIREBIRD_3_0("Firebird", false, true, FIREBIRD, FIREBIRD_2_5),
 
 
 
@@ -262,9 +262,9 @@ public enum SQLDialect {
      */
     MYSQL("MySQL", false, true),
 
+    MYSQL5("MySQL5", false, true),
 
-
-
+    ADS("ADS", false, true, MYSQL),
 
 
 
@@ -308,7 +308,9 @@ public enum SQLDialect {
     POSTGRES("Postgres", false, true),
 
 
-
+    POSTGRES_9_3("Postgres", false, true, POSTGRES, null),
+    POSTGRES_9_4("Postgres", false, true, POSTGRES, POSTGRES_9_3),
+    POSTGRES_9_5("Postgres", false, true, POSTGRES, POSTGRES_9_4),
 
 
 
@@ -459,6 +461,48 @@ public enum SQLDialect {
     // -------------------------------------------------------------------------
     // SQL dialects for commercial usage
     // -------------------------------------------------------------------------
+    ACCESS("Access", true, true),
+    ACCESS2013("Access", true, true, ACCESS),
+
+    ASE("ASE", true, true),
+
+    DB2("DB2", true, true),
+    DB2_9("DB2", true, true, DB2),
+    DB2_10("DB2", true, true, DB2, DB2_9),
+
+    HANA("Hana", true, true),
+    INFORMIX("Informix", true, true),
+    KYLIN("kylin", true, true),
+    INGRES("Ingres", true, true),
+
+    ORACLE("Oracle", true, true),
+    ORACLE10G("Oracle", true, true, ORACLE),
+    ORACLE11G("Oracle", true, true, ORACLE, ORACLE10G),
+    ORACLE12C("Oracle", true, true, ORACLE, ORACLE11G),
+
+    POSTGRESPLUS("PostgresPlus", true, true),
+    REDSHIFT("Redshift", true, true),
+
+    SQLSERVER("SQLServer", true, true),
+    SQLSERVER2000("SQLServer", true, true, SQLSERVER),
+    SQLSERVER2005("SQLServer", true, true, SQLSERVER, SQLSERVER2000),
+    SQLSERVER2008("SQLServer", true, true, SQLSERVER),
+    SQLSERVER2012("SQLServer", true, true, SQLSERVER, SQLSERVER2008),
+    SQLSERVER2014("SQLServer", true, true, SQLSERVER, SQLSERVER2012),
+
+    SYBASE("Sybase", true, true),
+    VERTICA("Vertica", true, true),
+    HIVE("Hive", true, true, MYSQL),
+    PRESTO("presto", true, true),
+    PHOENIX("Hive", true, true),
+    IMPALA("Hive", true, true),
+    TRANSWARP("Hive", true, true, MYSQL),
+    GBASE8S("Informix", true, true, INFORMIX),
+    CLICK_HOUSE("ClickHouse", true, true),
+    GREENPLUM("GreenPlum", true, true, POSTGRES),
+    GAUSSDB("Gaussdb", true, true, POSTGRES),
+    ODPS("Odps", true, true)
+
 
 
 

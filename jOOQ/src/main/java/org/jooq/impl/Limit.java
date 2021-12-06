@@ -185,7 +185,53 @@ final class Limit extends AbstractQueryPart implements UTransient {
                 break;
             }
 
+            case SQLSERVER:
+            case SQLSERVER2012:
+            case SQLSERVER2014: {
+                ctx.castMode(NEVER)
+                        .formatSeparator()
+                        .keyword("offset")
+                        .sql(' ').visit(this.offsetOrZero)
+                        .sql(' ').keyword("rows");
 
+                if (!limitZero()) {
+                    ctx.sql(' ').keyword("fetch next")
+                            .sql(' ').visit(this.numberOfRows)
+                            .sql(' ').keyword("rows only");
+                }
+                ctx.castMode(castMode);
+                break;
+            }
+            case ACCESS:
+            case ACCESS2013:
+            case ASE:
+            case SQLSERVER2000:
+            case SQLSERVER2005:
+            case SQLSERVER2008: {
+                if (this.offset != null) {
+                    throw new DataAccessException("Offsets in TOP clause not supported");
+                }
+
+                ctx.paramType(ParamType.INLINED)
+                        .keyword("top")
+                        .sql(' ').visit(this.numberOfRows)
+                        .paramType(paramType);
+                break;
+            }
+            case DB2:
+            case DB2_9:
+            case DB2_10: {
+                if (this.offset != null) {
+                    throw new DataAccessException("DB2 does not support offsets in FETCH FIRST ROWS ONLY clause");
+                }
+                ctx.paramType(ParamType.INLINED)
+                        .formatSeparator()
+                        .keyword("fetch first")
+                        .sql(' ').visit(this.numberOfRowsOrMax)
+                        .sql(' ').keyword("rows only")
+                        .paramType(paramType);
+                break;
+            }
 
 
 

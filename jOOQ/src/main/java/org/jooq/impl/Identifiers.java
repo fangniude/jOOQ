@@ -76,7 +76,9 @@ final class Identifiers {
 
 
                 case MARIADB:
+                case MYSQL5:
                 case MYSQL:
+                case IMPALA:
                     QUOTES.put(family, new char[][][] {
                         { { '`'      }, { '"'      } },
                         { { '`'      }, { '"'      } },
@@ -84,16 +86,22 @@ final class Identifiers {
                     });
                     break;
 
+                case ACCESS:
+                case ASE:
+                case SQLSERVER:
+                case SYBASE:
+                    QUOTES.put(family, new char[][][] { { {'['}, {'['} }, { {']'},{']'} }, { {']'},{']'} } });
+                    break;
 
 
 
-
-
-
-
-
-
-
+                case ORACLE:
+                    QUOTES.put(family, new char[][][] {
+                            { { '"'      } },
+                            { { '"'      } },
+                            { { '\'', '\'' } }
+                    });
+                    break;
 
 
 
