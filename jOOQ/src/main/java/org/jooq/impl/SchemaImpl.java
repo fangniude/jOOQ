@@ -84,7 +84,7 @@ public class SchemaImpl extends AbstractNamed implements Schema {
     private static final Clause[] CLAUSES        = { SCHEMA, SCHEMA_REFERENCE };
     static final Schema           DEFAULT_SCHEMA = new SchemaImpl("");
 
-    private Catalog               catalog;
+    protected Catalog               catalog;
 
     public SchemaImpl(String name) {
         this(name, null);

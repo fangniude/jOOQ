@@ -97,29 +97,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.jooq.Catalog;
-import org.jooq.Condition;
-import org.jooq.Configuration;
-import org.jooq.ConstraintEnforcementStep;
-import org.jooq.DataType;
-import org.jooq.Field;
-import org.jooq.ForeignKey;
-import org.jooq.Index;
-import org.jooq.Meta;
-import org.jooq.Name;
+import org.jooq.*;
 // ...
-import org.jooq.Record;
-import org.jooq.Result;
-import org.jooq.SQLDialect;
-import org.jooq.Schema;
-import org.jooq.Sequence;
-import org.jooq.SortField;
-import org.jooq.Source;
-import org.jooq.Table;
-import org.jooq.TableField;
-import org.jooq.TableOptions;
 import org.jooq.TableOptions.TableType;
-import org.jooq.UniqueKey;
 import org.jooq.conf.ParseUnknownFunctions;
 import org.jooq.exception.DataAccessException;
 import org.jooq.exception.DataDefinitionException;
@@ -427,11 +407,11 @@ final class MetaImpl extends AbstractMeta {
                     ? TableType.MATERIALIZED_VIEW
                     : TableType.TABLE;
 
-
+                this.catalog = DSL.catalog(catalog);
                 return new MetaTable(
                     name,
                     this,
-                    getColumns(catalog, schema, name),
+                    null,
                     getUks(catalog, schema, name),
                     remarks,
                     tableType
@@ -536,48 +516,6 @@ final class MetaImpl extends AbstractMeta {
         }
 
         @SuppressWarnings("unchecked")
-        private final Result<Record> getColumns(String catalog, String schema, String table) {
-
-            // SQLite JDBC's DatabaseMetaData.getColumns() can only return a single
-            // table's columns
-            if (columnCache == null && family() != SQLITE) {
-                Result<Record> columns = getColumns0(catalog, schema, "%");
-
-                Field<String> tableCat   = (Field<String>) columns.field(0); // TABLE_CAT
-                Field<String> tableSchem = (Field<String>) columns.field(1); // TABLE_SCHEM
-                Field<String> tableName  = (Field<String>) columns.field(2); // TABLE_NAME
-
-                Map<Record, Result<Record>> groups = columns.intoGroups(new Field[] { tableCat, tableSchem, tableName });
-                columnCache = new LinkedHashMap<>();
-
-                groups.forEach((k, v) -> columnCache.put(name(k.get(tableCat), k.get(tableSchem), k.get(tableName)), v));
-            }
-
-            if (columnCache != null)
-                return columnCache.get(name(catalog, schema, table));
-            else
-                return getColumns0(catalog, schema, table);
-        }
-
-        private final Result<Record> getColumns0(final String catalog, final String schema, final String table) {
-            return meta(meta -> {
-                try (ResultSet rs = catalogSchema(catalog, schema, (c, s) -> meta.getColumns(c, s, table, "%"))) {
-                    // Work around a bug in the SQL Server JDBC driver by
-                    // coercing data types to the expected types
-                    // The bug was reported here:
-                    // https://connect.microsoft.com/SQLServer/feedback/details/775425/jdbc-4-0-databasemetadata-getcolumns-returns-a-resultset-whose-resultsetmetadata-is-inconsistent
-
-                    // [#9740] TODO: Make this call lenient with respect to
-                    //         column count, filling unavailable columns with
-                    //         default values.
-                    return rs.getMetaData().getColumnCount() < GET_COLUMNS_EXTENDED.length
-                        ? dsl().fetch(rs, GET_COLUMNS_SHORT)
-                        : dsl().fetch(rs, GET_COLUMNS_EXTENDED);
-                }
-            });
-        }
-
-        @SuppressWarnings("unchecked")
         @Override
         public List<Sequence<?>> getSequences() {
             Result<Record> result = getSequences0();
@@ -678,7 +616,9 @@ final class MetaImpl extends AbstractMeta {
     };
 
     private final class MetaTable extends TableImpl<Record> {
+        private transient volatile Map<Name, Result<Record>> columnCache;
         private final Result<Record> uks;
+        private volatile boolean inited = false;
 
         MetaTable(String name, Schema schema, Result<Record> columns, Result<Record> uks, String remarks, TableType tableType) {
             super(name(name), schema, null, null, null, null, comment(remarks), TableOptions.of(tableType));
@@ -1123,6 +1063,65 @@ final class MetaImpl extends AbstractMeta {
 
                 createField(name(columnName), type, this, remarks);
             }
+
+            this.inited = true;
+        }
+
+        @Override
+        public synchronized Row fieldsRow() {
+            if (inited) {
+                return super.fieldsRow();
+            } else {
+                final Schema schema = this.getSchema();
+                final String catalogName = schema.getCatalog() != null ? schema.getCatalog().getName() : null;
+                final Result<Record> columns = getColumns(catalogName, schema.getName(), this.getName());
+                if (columns != null) {
+                    initColumns(columns);
+                }
+                return super.fieldsRow();
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private final Result<Record> getColumns(String catalog, String schema, String table) {
+
+            // SQLite JDBC's DatabaseMetaData.getColumns() can only return a single
+            // table's columns
+            if (columnCache == null && family() != SQLITE) {
+                Result<Record> columns = getColumns0(catalog, schema, table);
+
+                Field<String> tableCat   = (Field<String>) columns.field(0); // TABLE_CAT
+                Field<String> tableSchem = (Field<String>) columns.field(1); // TABLE_SCHEM
+                Field<String> tableName  = (Field<String>) columns.field(2); // TABLE_NAME
+
+                Map<Record, Result<Record>> groups = columns.intoGroups(new Field[] { tableCat, tableSchem, tableName });
+                columnCache = new LinkedHashMap<>();
+
+                groups.forEach((k, v) -> columnCache.put(name(k.get(tableCat), k.get(tableSchem), k.get(tableName)), v));
+            }
+
+            if (columnCache != null)
+                return columnCache.get(name(catalog, schema, table));
+            else
+                return getColumns0(catalog, schema, table);
+        }
+
+        private final Result<Record> getColumns0(final String catalog, final String schema, final String table) {
+            return meta(meta -> {
+                try (ResultSet rs = catalogSchema(catalog, schema, (c, s) -> meta.getColumns(c, s, table, "%"))) {
+                    // Work around a bug in the SQL Server JDBC driver by
+                    // coercing data types to the expected types
+                    // The bug was reported here:
+                    // https://connect.microsoft.com/SQLServer/feedback/details/775425/jdbc-4-0-databasemetadata-getcolumns-returns-a-resultset-whose-resultsetmetadata-is-inconsistent
+
+                    // [#9740] TODO: Make this call lenient with respect to
+                    //         column count, filling unavailable columns with
+                    //         default values.
+                    return rs.getMetaData().getColumnCount() < GET_COLUMNS_EXTENDED.length
+                            ? dsl().fetch(rs, GET_COLUMNS_SHORT)
+                            : dsl().fetch(rs, GET_COLUMNS_EXTENDED);
+                }
+            });
         }
     }
 

@@ -190,7 +190,7 @@ final class Limit extends AbstractQueryPart implements UTransient {
             case SQLSERVER2014: {
                 ctx.castMode(NEVER)
                         .formatSeparator()
-                        .keyword("offset")
+                        .keyword("order by 1 offset")
                         .sql(' ').visit(this.offsetOrZero)
                         .sql(' ').keyword("rows");
 
