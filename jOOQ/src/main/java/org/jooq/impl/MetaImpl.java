@@ -790,8 +790,11 @@ final class MetaImpl extends AbstractMeta {
             });
 
             Map<Name, Schema> schemas = new HashMap<>();
-            for (Schema schema : getSchemas())
-                schemas.put(schema.getQualifiedName(), schema);
+            for (Schema schema : getSchemas()) {
+                schemas.put(hasCatalog(getCatalog())
+                        ? name(getCatalog().getQualifiedName(), schema.getQualifiedName())
+                        : schema.getQualifiedName(), schema);
+            }
 
             List<ForeignKey<Record, ?>> references = new ArrayList<>(groups.size());
             groups.forEach((k, v) -> {
