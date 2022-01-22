@@ -385,8 +385,8 @@ final class MetaImpl extends AbstractMeta {
             });
 
             return Tools.map(tables, table -> {
-                String catalog = table.get(0, String.class);
-                String schema = table.get(1, String.class);
+                String catalog = table.get(inverseSchemaCatalog ? 1 : 0, String.class);
+                String schema = table.get(inverseSchemaCatalog ? 0 : 1, String.class);
                 String name = table.get(2, String.class);
                 String type = table.get(3, String.class);
                 String remarks = table.get(4, String.class);
